@@ -73,17 +73,17 @@ fun PreviewAdoptScreen() {
       AdoptScreen(pet.id)
    }
 }
+
+@OptIn(kotlinx.serialization.InternalSerializationApi::class)
 sealed class Routes {
    @Serializable
    data object List
 
-   @OptIn(kotlinx.serialization.InternalSerializationApi::class)
    @Serializable
    data class Detail(
       val petId: Int
    )
 
-   @OptIn(kotlinx.serialization.InternalSerializationApi::class)
    @Serializable
    data class Adopt(
       val petId: Int
