@@ -46,6 +46,7 @@ fun DiscountDealApp() {
                 composable(Routes.Nearby.route) {
                     NearbyDealsScreen(
                         nearbyVM = nearbyVM,
+                        profileVM = profileVM,
                         deals = nearbyVM.nearbyDeals,
                         onDealClick = { deal ->
                             navController.navigate(Routes.DealDetails.createRoute(deal.id))

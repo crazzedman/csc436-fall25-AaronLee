@@ -1,6 +1,7 @@
 package com.zybooks.discountdealapp.ui.viewmodels
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -38,7 +39,7 @@ class OnlineDealsViewModel : ViewModel() {
                     .map { it.category }
                     .distinct()
                     .sorted()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 allOnlineDeals = emptyList()
                 categories = listOf("All")
             }
@@ -49,10 +50,10 @@ class OnlineDealsViewModel : ViewModel() {
         selectedCategory = category
     }
 
-    var scrollIndex by mutableStateOf(0)
+    var scrollIndex by mutableIntStateOf(0)
         private set
 
-    var scrollOffset by mutableStateOf(0)
+    var scrollOffset by mutableIntStateOf(0)
         private set
 
     fun saveScrollState(index: Int, offset: Int) {

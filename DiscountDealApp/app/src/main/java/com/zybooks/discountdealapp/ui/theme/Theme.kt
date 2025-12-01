@@ -1,31 +1,41 @@
 package com.zybooks.discountdealapp.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 private val LightColors = lightColorScheme(
-    primary = Purple40,
-    onPrimary = White,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Color(0xFF2ECC71),
+    onPrimary = Color.White,
+    background = Color.White,
+    onBackground = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Purple80,
-    onPrimary = Black,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFF2ECC71),
+    onPrimary = Color.Black,
+    background = Color(0xFF121212),
+    onBackground = Color.White,
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color.White
 )
+
+
 
 @Composable
 fun DiscountDealTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val colors = if (darkTheme) DarkColors else LightColors
+
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
+        colorScheme = colors,
         typography = Typography,
         content = content
     )

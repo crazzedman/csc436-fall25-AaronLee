@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
@@ -13,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zybooks.discountdealapp.data.Deal
@@ -28,10 +29,10 @@ fun HomeScreen(
     onProfileClick: () -> Unit,
     onDealClick: (Deal) -> Unit
 ) {
-    // Directly read from mutableStateOf in ViewModel
     val isLoading = homeVM.isLoading
     val totalDeals = homeVM.totalDealsCount
     val categories = homeVM.categories
+    val featuredDeals = homeVM.featuredDeals
 
     Column(
         modifier = Modifier
@@ -39,67 +40,66 @@ fun HomeScreen(
             .padding(horizontal = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top app bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .background(Color(0xFF2ECC71))
+                .background(MaterialTheme.colorScheme.primary)
                 .height(60.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "The Daily Dealer",
                 fontSize = 22.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Loading state
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.padding(16.dp))
         } else {
-            // Total deals
             Text(
                 text = "Total Deals: $totalDeals",
                 fontSize = 18.sp,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             )
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Categories
             if (categories.isNotEmpty()) {
                 Text(
                     text = "Categories: ${categories.joinToString(", ")}",
                     fontSize = 16.sp,
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Home cards
-        HomeCard(
-            label = "Nearby Deals",
-            icon = Icons.Default.Map,
-            onClick = onNearbyClick
-        )
+        // Home cards in a vertical column
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            HomeCard(label = "Nearby Deals", icon = Icons.Default.Map, onClick = onNearbyClick)
+            HomeCard(label = "Online Deals", icon = Icons.Default.Public, onClick = onOnlineClick)
+            HomeCard(label = "Profile", icon = Icons.Default.Person, onClick = onProfileClick)
+        }
 
-        HomeCard(
-            label = "Online Deals",
-            icon = Icons.Default.Public,
-            onClick = onOnlineClick
-        )
-
-        HomeCard(
-            label = "Profile",
-            icon = Icons.Default.Person,
-            onClick = onProfileClick
-        )
+        // Featured deals row
+        if (featuredDeals.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "Featured Deals",
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                items(featuredDeals) { deal ->
+                    DealCard(deal = deal, onClick = { onDealClick(deal) })
+                }
+            }
+        }
     }
 }
 
@@ -112,25 +112,51 @@ fun HomeCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
+            .height(140.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(22.dp),
-        border = BorderStroke(2.dp, Color(0xFF4EA7F7))
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
     ) {
         Column(
             modifier = Modifier
-                .padding(vertical = 22.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier.size(96.dp)
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(48.dp)
             )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(text = label, fontSize = 18.sp, color = Color.Black)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = label,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    }
+}
+
+@Composable
+fun DealCard(deal: Deal, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .width(180.dp)
+            .height(200.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(deal.title, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("${deal.discountAmount}% Off", color = MaterialTheme.colorScheme.secondary)
         }
     }
 }

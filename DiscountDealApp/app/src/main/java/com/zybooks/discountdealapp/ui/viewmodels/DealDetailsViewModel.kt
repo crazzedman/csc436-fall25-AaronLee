@@ -28,10 +28,10 @@ class DealDetailsViewModel(
 
     private fun loadDeal(id: Int) {
         viewModelScope.launch {
-            try {
-                selectedDeal = repository.getDealById(id)
-            } catch (e: Exception) {
-                selectedDeal = null
+            selectedDeal = try {
+                repository.getDealById(id)
+            } catch (_: Exception) {
+                null
             }
         }
     }

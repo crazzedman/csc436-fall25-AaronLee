@@ -101,7 +101,7 @@ fun OnlineDealsScreen(
                                         try {
                                             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                                             context.startActivity(intent)
-                                        } catch (e: Exception) {
+                                        } catch (_: Exception) {
                                             // Safe fail: do nothing
                                         }
                                     }
