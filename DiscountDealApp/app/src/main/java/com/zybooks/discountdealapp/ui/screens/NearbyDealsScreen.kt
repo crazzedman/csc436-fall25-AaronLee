@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -40,20 +41,36 @@ fun NearbyDealsScreen(
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
+    var showLocationDialog by remember { mutableStateOf(false) }
 
-    // Update user location if permission granted
-    LaunchedEffect(profileVM.locationPermissionGranted) {
-        if (profileVM.locationPermissionGranted) {
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    if (location != null) {
-                        nearbyVM.setUserLocation(location.latitude, location.longitude)
+    // Check if we should show location dialog
+    LaunchedEffect(profileVM.locationPermissionGranted, profileVM.shouldAskLocationPermission) {
+        if (!profileVM.locationPermissionGranted &&
+            profileVM.shouldAskLocationPermission &&
+            !profileVM.neverAskAgain
+        ) {
+            showLocationDialog = true
+        } else {
+            // Load user location if allowed
+            if (profileVM.locationPermissionGranted) {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                try {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        if (location != null) {
+                            nearbyVM.setUserLocation(location.latitude, location.longitude)
+                        }
                     }
-                }
-            } catch (e: SecurityException) {
-                // Ignore if permission not granted
+                } catch (_: SecurityException) {}
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            nearbyVM.saveScrollState(
+                listState.firstVisibleItemIndex,
+                listState.firstVisibleItemScrollOffset
+            )
         }
     }
 
@@ -70,10 +87,13 @@ fun NearbyDealsScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+
+            // Map
             NearbyDealsMap(
                 deals = deals,
                 userLat = nearbyVM.userLatitude,
-                userLng = nearbyVM.userLongitude
+                userLng = nearbyVM.userLongitude,
+                showUserMarker = profileVM.locationPermissionGranted
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -89,6 +109,53 @@ fun NearbyDealsScreen(
                 }
             }
         }
+
+        // Location permission dialog
+        // Location permission dialog
+        if (showLocationDialog) {
+            var dontAskAgain by remember { mutableStateOf(false) }
+
+            AlertDialog(
+                onDismissRequest = { showLocationDialog = false },
+                title = { Text("Enable Location Access?") },
+                text = {
+                    Column {
+                        Text("This helps show nearby deals around you.")
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = dontAskAgain,
+                                onCheckedChange = { checked ->
+                                    dontAskAgain = checked
+                                    // Update ViewModel immediately
+                                    profileVM.updateNeverAskAgain(checked)
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Don't ask again")
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        profileVM.setLocationPermission(true)
+                        showLocationDialog = false
+                    }) {
+                        Text("Enable")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        profileVM.setLocationPermission(false)
+                        showLocationDialog = false
+                    }) {
+                        Text("No, thanks")
+                    }
+                }
+            )
+        }
+
     }
 }
 
@@ -96,10 +163,14 @@ fun NearbyDealsScreen(
 fun NearbyDealsMap(
     deals: List<Deal>,
     userLat: Double,
-    userLng: Double
+    userLng: Double,
+    showUserMarker: Boolean
 ) {
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(com.google.android.gms.maps.model.LatLng(userLat, userLng), 12f)
+        position = CameraPosition.fromLatLngZoom(
+            com.google.android.gms.maps.model.LatLng(userLat, userLng),
+            12f
+        )
     }
 
     GoogleMap(
@@ -109,16 +180,22 @@ fun NearbyDealsMap(
         cameraPositionState = cameraPositionState
     ) {
         // User location marker in blue
-        Marker(
-            state = rememberUpdatedMarkerState(position = com.google.android.gms.maps.model.LatLng(userLat, userLng)),
-            title = "You are here",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
-        )
+        if (showUserMarker) {
+            Marker(
+                state = rememberUpdatedMarkerState(
+                    position = com.google.android.gms.maps.model.LatLng(userLat, userLng)
+                ),
+                title = "You are here",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+            )
+        }
 
         // Deal markers in red
         deals.forEach { deal ->
             Marker(
-                state = rememberUpdatedMarkerState(position = com.google.android.gms.maps.model.LatLng(deal.latitude, deal.longitude)),
+                state = rememberUpdatedMarkerState(
+                    position = com.google.android.gms.maps.model.LatLng(deal.latitude, deal.longitude)
+                ),
                 title = deal.title,
                 snippet = deal.storeName,
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)

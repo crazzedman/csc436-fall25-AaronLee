@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.zybooks.discountdealapp.data.Deal
 import com.zybooks.discountdealapp.data.DealRepository
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class DealDetailsViewModel(
     private val state: SavedStateHandle
@@ -13,14 +16,14 @@ class DealDetailsViewModel(
 
     private val repository = DealRepository()
 
-    var selectedDeal: Deal?
-        get() = state.get<Deal>("selectedDeal")
-        private set(value) {
-            state["selectedDeal"] = value
-        }
+    // store only the ID
+    private val dealId: Int? = state["dealId"]
+
+    // hold the loaded deal in Compose state
+    var selectedDeal by mutableStateOf<Deal?>(null)
+        private set
 
     init {
-        val dealId: Int? = state["dealId"]
         if (dealId != null) {
             loadDeal(dealId)
         }

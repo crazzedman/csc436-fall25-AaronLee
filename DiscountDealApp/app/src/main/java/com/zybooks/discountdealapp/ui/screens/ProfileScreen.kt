@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.zybooks.discountdealapp.ui.viewmodels.ProfileViewModel
@@ -33,6 +34,7 @@ fun ProfileScreen(
                 .padding(16.dp)
         ) {
 
+            // Dark Mode Toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -49,14 +51,33 @@ fun ProfileScreen(
             // Location permission toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Location Access", style = MaterialTheme.typography.bodyLarge)
                 Switch(
                     checked = profileVM.locationPermissionGranted,
-                    onCheckedChange = { profileVM.setLocationPermission(it) }
+                    onCheckedChange = {
+                        profileVM.setLocationPermission(it)
+                        if (!it) profileVM.resetPermissionAsking()
+                    }
                 )
             }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = profileVM.neverAskAgain,
+                    onCheckedChange = { profileVM.updateNeverAskAgain(it) }
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Don't ask again", style = MaterialTheme.typography.bodyMedium)
+            }
+
 
             Spacer(Modifier.height(16.dp))
 
@@ -68,4 +89,3 @@ fun ProfileScreen(
         }
     }
 }
-

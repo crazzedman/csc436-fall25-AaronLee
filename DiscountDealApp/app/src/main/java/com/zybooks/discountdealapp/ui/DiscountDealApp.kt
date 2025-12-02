@@ -77,7 +77,7 @@ fun DiscountDealApp() {
                     arguments = listOf(navArgument("dealId") { type = NavType.IntType })
                 ) { entry ->
 
-                    val dealDetailsVM: DealDetailsViewModel = viewModel()
+                    val dealDetailsVM: DealDetailsViewModel = viewModel(entry)
 
                     val deal = dealDetailsVM.selectedDeal
 
@@ -86,6 +86,7 @@ fun DiscountDealApp() {
                         onBack = { navController.popBackStack() }
                     )
                 }
+
 
             }
         }

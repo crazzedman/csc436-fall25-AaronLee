@@ -8,9 +8,15 @@ import androidx.lifecycle.ViewModel
 class ProfileViewModel : ViewModel() {
 
     var darkModeEnabled by mutableStateOf(false)
-    var locationPermissionGranted by mutableStateOf(false)
-    var appVersion by mutableStateOf("1.0.0")
 
+    var appVersion by mutableStateOf("1.0.0")
+    var locationPermissionGranted by mutableStateOf(false)
+    var shouldAskLocationPermission by mutableStateOf(true)
+    var neverAskAgain by mutableStateOf(false)
+
+    fun updateNeverAskAgain(value: Boolean) {
+        neverAskAgain = value
+    }
     fun setDarkMode(enabled: Boolean) {
         darkModeEnabled = enabled
     }
@@ -19,5 +25,14 @@ class ProfileViewModel : ViewModel() {
         locationPermissionGranted = granted
     }
 
+    fun disablePermissionAsking() {
+        neverAskAgain = true
+        shouldAskLocationPermission = false
+    }
 
+    fun resetPermissionAsking() {
+        if (!neverAskAgain) {
+            shouldAskLocationPermission = true
+        }
+    }
 }

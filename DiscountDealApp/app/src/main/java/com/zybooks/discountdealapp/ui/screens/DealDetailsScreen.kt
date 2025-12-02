@@ -1,29 +1,18 @@
 package com.zybooks.discountdealapp.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.zybooks.discountdealapp.data.Deal
 
@@ -45,73 +34,114 @@ fun DealDetailsScreen(
             )
         }
     ) { padding ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            deal?.imageUrl?.let { url ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(url),
-                        contentDescription = deal.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-
-            deal?.title?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            Text(
-                text = "Store: ${deal?.storeName ?: "N/A"}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Category: ${deal?.category ?: "N/A"}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Discount: ${deal?.discountAmount ?: 0.0}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Valid until: ${deal?.validUntil ?: "N/A"}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            deal?.description?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+        when {
+            deal == null -> DealDetailsError(padding)
+            else -> DealDetailsContent(deal, padding)
         }
+    }
+}
+
+@Composable
+private fun DealDetailsError(padding: PaddingValues) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Unable to load deal details.",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Please try again.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun DealDetailsContent(
+    deal: Deal,
+    padding: PaddingValues
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // IMAGE — safe fallback
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            AsyncImage(
+                model = deal.imageUrl ?: "",
+                contentDescription = deal.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // TITLE
+        Text(
+            text = deal.title ?: "Untitled Deal",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        // STORE
+        DetailField(label = "Store", value = deal.storeName)
+
+        // CATEGORY
+        DetailField(label = "Category", value = deal.category)
+
+        // DISCOUNT
+        DetailField(
+            label = "Discount",
+            value = deal.discountAmount?.let { "$it%" }
+        )
+
+        // VALID UNTIL
+        DetailField(label = "Valid until", value = deal.validUntil)
+
+        Spacer(Modifier.height(10.dp))
+
+        // DESCRIPTION
+        if (!deal.description.isNullOrBlank()) {
+            Text(
+                text = deal.description!!,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailField(label: String, value: String?) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label:",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = value ?: "N/A",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
