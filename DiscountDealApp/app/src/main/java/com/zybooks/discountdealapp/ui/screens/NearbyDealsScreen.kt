@@ -3,6 +3,7 @@ package com.zybooks.discountdealapp.ui.screens
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -98,16 +99,28 @@ fun NearbyDealsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyRow(
+            LazyColumn(
                 state = listState,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                modifier = Modifier.fillMaxWidth()
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(16.dp)
             ) {
                 items(deals) { deal ->
-                    DealListItem(deal = deal, onDealClick = onDealClick, context = context)
+                    DealListItem(
+                        deal = deal,
+                        onDealClick = onDealClick,
+                        onOpenMap = {
+                            openGoogleMaps(
+                                context,
+                                deal.latitude,
+                                deal.longitude,
+                                deal.title
+                            )
+                        }
+                    )
                 }
             }
+
+
         }
 
         // Location permission dialog
@@ -186,7 +199,7 @@ fun NearbyDealsMap(
                     position = com.google.android.gms.maps.model.LatLng(userLat, userLng)
                 ),
                 title = "You are here",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
             )
         }
 
@@ -205,23 +218,40 @@ fun NearbyDealsMap(
 }
 
 @Composable
-fun DealListItem(deal: Deal, onDealClick: (Deal) -> Unit, context: Context) {
+fun DealListItem(
+    deal: Deal,
+    onDealClick: (Deal) -> Unit,
+    onOpenMap: () -> Unit
+) {
     Card(
+        onClick = { onDealClick(deal) },
         modifier = Modifier
-            .width(220.dp)
-            .padding(vertical = 4.dp),
-        onClick = { onDealClick(deal) }
+            .fillMaxWidth()
+            .padding(bottom = 12.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = deal.title, style = MaterialTheme.typography.titleMedium)
-            Text(text = deal.storeName, style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Discount: ${deal.discountAmount}%", style = MaterialTheme.typography.bodySmall)
+        Column(Modifier.padding(16.dp)) {
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = deal.title,
+                style = MaterialTheme.typography.titleMedium
+            )
 
-            Button(onClick = { openGoogleMaps(context, deal.latitude, deal.longitude, deal.title) }) {
-                Text("Open in Google Maps")
+            Text(
+                text = deal.storeName,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = "Discount: ${deal.discountAmount}%",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            Button(onClick = onOpenMap) {
+                Text("Open In Google Maps")
             }
+
         }
     }
 }

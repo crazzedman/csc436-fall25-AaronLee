@@ -57,25 +57,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-        } else {
-            Text(
-                text = "Total Deals: $totalDeals",
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (categories.isNotEmpty()) {
-                Text(
-                    text = "Categories: ${categories.joinToString(", ")}",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
 
         // Home cards in a vertical column
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -91,7 +72,7 @@ fun HomeScreen(
                 text = "Featured Deals",
                 fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

@@ -24,11 +24,7 @@ fun OnlineDealsScreen(
     onDealClick: (Deal) -> Unit,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
-
-    // Null-safe deal list
     val filtered = onlineVM.filteredDeals
-
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = onlineVM.scrollIndex,
         initialFirstVisibleItemScrollOffset = onlineVM.scrollOffset
@@ -49,7 +45,10 @@ fun OnlineDealsScreen(
                 title = { Text("Online Deals") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
@@ -71,51 +70,66 @@ fun OnlineDealsScreen(
 
             LazyColumn(state = listState) {
                 items(filtered) { deal ->
-
-                    val title = deal.title
-                    val description = deal.description
-                    val url = deal.websiteUrl
-
-                    Card(
-                        onClick = { onDealClick(deal) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-
-                            Text(
-                                text = title,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-
-                            Text(
-                                text = description,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-
-                            if (!url.isNullOrBlank()) {
-                                Spacer(Modifier.height(6.dp))
-                                OutlinedButton(
-                                    onClick = {
-                                        try {
-                                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                                            context.startActivity(intent)
-                                        } catch (_: Exception) {
-                                            // Safe fail: do nothing
-                                        }
-                                    }
-                                ) {
-                                    Text("Visit Website")
-                                }
-                            }
-                        }
-                    }
+                    OnlineDealItem(
+                        deal = deal,
+                        onClick = { onDealClick(deal) }
+                    )
                 }
             }
         }
     }
 }
+
+/* ============================================================
+   COMPOSABLE: ONLINE DEAL ITEM (CARD)
+   ============================================================ */
+
+@Composable
+fun OnlineDealItem(
+    deal: Deal,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val url = deal.websiteUrl
+
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+
+            Text(
+                text = deal.title,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = deal.description,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            if (!url.isNullOrBlank()) {
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
+                            // ignore
+                        }
+                    }
+                ) {
+                    Text("Visit Website")
+                }
+            }
+        }
+    }
+}
+
 
 
 @Composable
